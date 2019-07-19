@@ -1,0 +1,89 @@
+select Album.AlbumId , Album.ArtistId, Album.Title, Artist.Name, count(Album.AlbumId) as countedArtist
+from Album
+inner join Artist
+on Album.ArtistId = Artist.ArtistId
+where Artist.ArtistId = 58
+
+select Album.AlbumId , Album.ArtistId, Album.Title, Artist.Name, count(Album.Artistid) as countedArtist
+from Album
+inner join Artist
+on Album.ArtistId = Artist.ArtistId
+group by Album.Artistid
+
+select Album.AlbumId , Album.ArtistId, Album.Title, Artist.Name, count(Album.Artistid) as countedArtist
+from Album
+join Artist
+on Album.ArtistId = Artist.ArtistId
+group by Album.Artistid 
+order by Album.Artistid desc
+
+1
+
+select Artistid, FreqArtist
+
+from
+(select Album.AlbumId , Album.ArtistId as Artistid, Album.Title, Artist.Name, count(Album.Artistid) as FreqArtist
+from Album
+join Artist
+on Album.ArtistId = Artist.ArtistId
+group by Album.Artistid 
+)
+where FreqArtist > 3
+order by FreqArtist desc
+
+
+11
+select ArtistName , FreqArtist
+
+from
+(select Album.AlbumId , Album.ArtistId as Artistid, Album.Title, Artist.Name as ArtistName, count(Album.Artistid) as FreqArtist
+from Album
+join Artist
+on Album.ArtistId = Artist.ArtistId
+group by Album.Artistid 
+)
+where FreqArtist > 3
+order by FreqArtist desc
+
+
+
+22
+select Customer.Country, Invoice.Total, count (country) as countryFreq
+from Invoice
+join Customer
+on invoice.CustomerId = Customer.CustomerId
+group by country
+order by total desc
+
+33
+Select Genre.Name, sum(Track.unitprice)as total , Customer.Country,  count(Customer.Country) as c
+from Track
+join Genre
+on track.GenreId = Genre.GenreId 
+join InvoiceLine
+on track.TrackId = InvoiceLine.TrackId
+join Invoice
+on InvoiceLine.InvoiceId = Invoice.InvoiceId
+join customer
+on Invoice.CustomerId = Customer.CustomerId
+group by 3 
+ 
+
+44
+select Track.Name, Track.composer, MediaType.Name, sum(InvoiceLine.UnitPrice) as totalunitPrice
+from Track 
+join MediaType
+on Track.MediatypeId = MediaType.MediaTypeId
+join InvoiceLine
+on InvoiceLine.TrackId = Track.TrackId
+group by MediaType.Name
+
+55
+select Customer.Country, Invoice.Total, Employee.FirstName
+from Invoice
+join Customer
+on invoice.CustomerId = Customer.CustomerId
+join Employee
+on Customer.SupportRepId = Employee.EmployeeId
+where Invoice.Total > (select avg( Total) from Invoice)
+group by Employee.FirstName

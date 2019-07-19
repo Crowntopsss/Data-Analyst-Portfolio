@@ -1,0 +1,579 @@
+
+EDA on Prosper Loan by TEMITOPE ADEBIYI
+=======================================================
+
+```{r}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Load all of the packages that you end up using in your analysis in this code
+# chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk. This
+# prevents the code from displaying in the knitted HTML output. You should set
+# echo=FALSE for all code chunks in your file, unless it makes sense for your
+# report to show the code that generated a particular plot.
+
+# The other parameters for "message" and "warning" should also be set to FALSE
+# for other code chunks once you have verified that each plot comes out as you
+# want it to. This will clean up the flow of your report.
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Load the Packages
+library(plyr)
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+library(tidyr)
+library(scales)
+library(GGally)
+library(ggthemes)
+library(lubridate)
+
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#load the data
+getwd()
+prosperloan = read.csv('prosperLoanData.csv')
+```
+
+## Introduction
+
+Prosper is America's first marketplace lending platform, with over $10 billion in funded loans.
+Prosper allows people to invest in each other in a way that is financially and socially rewarding. On loans, borrowers list loan requests between $2,000 and $35,000 and individual investors invest as little as $25 in each loan listing they select. Prosper handles the servicing of the loan on behalf of the matched borrowers and investors.
+Prosper Funding LLC is a wholly-owned subsidiary of Prosper Marketplace, Inc.
+Prosper Marketplace is backed by leading investors including Sequoia Capital, Francisco Partners, Institutional Venture Partners, and Credit Suisse NEXT Fund.
+This Exploratory Data Analysis scope covers loan information for over a 100,000 people between the years 2006 and 2013.
+The dataset has 81 original variables in the dataset.
+
+## Univariate Plots Section
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#printing the structure of the data
+str(prosperloan)
+```
+This is the structure of the data showing number of row and colunms. We can see the information for each column of the data, giving us the data type in each of the columns.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#summary of some relevant columns in the dataset
+summary(prosperloan$Term)
+summary(prosperloan$LoanStatus)
+summary(prosperloan$ProsperScore)
+summary(prosperloan$BorrowerRate)
+summary(prosperloan$EmploymentStatus)
+summary(prosperloan$Occupation)
+summary(prosperloan$StatedMonthlyIncome)
+summary(prosperloan$MonthlyLoanPayment)
+```
+
+The above is the summary of some columns in the Dataset.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#bar chart of prosper loan term
+ggplot(aes(Term), data = prosperloan) + 
+  geom_bar() + 
+  ggtitle('Loan Term') + 
+  xlab('Term') + 
+  stat_bin(bins = 30)
+```
+
+The most frequent loan term people went for is 3 years followed by 5 years and the least is 1 year.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Bar chart of loan status
+ggplot(aes(LoanStatus), data=prosperloan) + 
+  geom_bar() + 
+  coord_flip() + 
+  ggtitle("plot of loan Status") 
+```
+
+The cancelled transcations were just 5 which doesnt look obvious. From the data given most customers are still on current. the completed loan to defaulted loan is high more of completed. The highest past due loan days is (1-15 days).
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Bar chart showing prosper score
+ggplot(aes(ProsperScore), data = prosperloan) + 
+  geom_bar() +
+  ggtitle("Plot of prosper score")
+```
+
+
+The prosperscore is a normal distribution, with most score between 4 and 7 most of the transactions dont have a good prosper rating.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#bar chart showing the employment status
+ggplot(aes(EmploymentStatus), data = prosperloan) + 
+  geom_bar() + 
+  ggtitle("Plot of Employment Status")
+```
+
+MOst approved loans are of the employed and the fulltime category.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#bar chart showing the income range
+ggplot(aes(IncomeRange), data = prosperloan) + 
+  geom_bar() +
+  ggtitle("Plot of the Income range") +
+  theme(axis.text.x = element_text(angle = 30))
+```
+
+The income range of most of the clients is between $25,000 and $74,000.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Bar chart showing total loan per state
+ggplot(data = prosperloan, aes(BorrowerState)) + 
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  ggtitle("The plot of ther total Loan per state")
+```
+
+This above plot shows that California haves the highest amount of loan count which is also the most populated state in the United states. The only way we can work on this data is to relate it with the total population of each state.
+
+
+
+
+# Univariate Analysis
+
+
+### What is the structure of your dataset?
+This data has 88 variables and 113937 obervation.
+
+### What is/are the main feature(s) of interest in your dataset?
+The features of interest i will be considering in this dataset are below:
+- Term 
+- Loan status
+- Prosper Score
+- Occupation
+- Employment status
+- Income Range
+- Total Prosper loan
+- Listing category
+- Investors
+- Recommendation
+- Stated monthly income
+- Loan original amount
+- Loan origination date
+
+
+### What other features in the dataset do you think will help support your \
+Investigation into your feature(s) of interest?
+-Debt to income ratio
+-Investors
+-Borrower state
+
+### Did you create any new variables from existing variables in the dataset?
+Yes but they are below
+
+### Of the features you investigated, were there any unusual distributions? \
+I did not tidy, adjust, or change the form of the data.
+
+
+## Bivariate Plots Section
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#converting loan origination date into R date format
+prosperloan$LoanOriginationDate <- 
+  as.Date(prosperloan$LoanOriginationDate,format = "%Y-%m-%d")
+
+#creating a new variable for month of the year
+month_year <- c('Jan','Feb','Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 
+                'Sep','Oct', 'Nov', 'Dec')
+
+#formatting to only select the month part of that date
+prosperloan$LoanOriginationDate_month = 
+  format(prosperloan$LoanOriginationDate, "%b")
+
+#factorizing 
+prosperloan$LoanOriginationDate_month <- 
+  factor(prosperloan$LoanOriginationDate_month, month_year)
+
+#bar plot with the count of lons by month of origin
+ggplot(aes(x = LoanOriginationDate_month, y = LoanOriginalAmount), 
+       data = prosperloan) +
+  geom_boxplot() +
+  ggtitle('Money Borrowed By Month')
+```
+
+This above plot shows what I predicted how the months will affect the total amount being borrowed in a year. So the amount of loan increases towards the end of the year and reduces from the begining of the year.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plot of term and loan original amount
+ggplot(aes(Term, LoanOriginalAmount, group = Term), data = prosperloan) + 
+  geom_boxplot() +
+  scale_x_continuous() + 
+  theme_minimal()+
+  ggtitle("Plot of Term in relation to Loan original Amount")
+```
+
+In this above plot we can see that the 60 month has the highest mean loan original amount followed by the 36 month then then the 12 monthns. It can also be seen that for the 12 month there are some outliers which means some applicant got loan above 10000 dollars. For the 36 and the 60 months the highest amount borrowed is around 35000 dollars. The 60 months has the widest range.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plot of term in relation to investor
+ggplot(aes(Term, Investors, group= Term), data = prosperloan) + 
+  geom_bar(stat = "identity") +
+  ggtitle("Plot of investors and Term funded")
+  theme_minimal()
+```
+
+Wow we see above that there are more investors for the 36 month that any other term and also show less interest of investors in the 12 month term.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# summary of the the below variable
+summary(prosperloan$LoanStatus)
+summary(prosperloan$EmploymentStatus)
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#4 plots for different loan satus in relation to employment status 
+
+g1 <- ggplot(aes( EmploymentStatus, LoanStatus), 
+             data = subset(prosperloan, LoanStatus == "Chargedoff" )) +
+  geom_bar(stat = "identity") + coord_flip() +ggtitle("Chargedoff")
+
+g2 <- ggplot(aes(EmploymentStatus, LoanStatus), 
+             data = subset(prosperloan, LoanStatus == "Completed" )) +
+  geom_bar(stat = "identity") + coord_flip() + ggtitle("completed")
+
+g3 <- ggplot(aes(EmploymentStatus, LoanStatus), 
+             data = subset(prosperloan, LoanStatus == "Current" )) +
+  geom_bar(stat = "identity") + coord_flip() + ggtitle("current")
+
+g4 <- ggplot(aes(EmploymentStatus, LoanStatus), 
+             data = subset(prosperloan, LoanStatus == "Defaulted" )) +
+  geom_bar(stat = "identity") + coord_flip() +ggtitle("Defaulted")
+
+#plotting all 4 plots together
+grid.arrange(g1,g2,g3,g4, nrow = 2) 
+```
+
+From this differrent plots above currnet loan status is being domonated by hte employed, most Defaulters of the loan are the fulltime followed by the non- available. The most charged off and most completed are the full time and the employed.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#creating a new data frame for mean of borrower rate grouped by prosper score
+prosper_score_rate <- prosperloan %>%
+  group_by(ProsperScore)%>%
+  summarise(mean_BorrowerRate = mean(BorrowerRate),
+            median_BorrowerRate = median(BorrowerRate),
+            n = n())%>%
+  ungroup()%>%
+  arrange(ProsperScore)
+
+#plot of the above new data frame
+ggplot(aes(ProsperScore,mean_BorrowerRate), data = prosper_score_rate) + 
+  geom_line() + 
+  ggtitle("plot of mean borrower rate in relation to prosper score")
+```
+
+Amazing what is going on in the above plot, there is a trend which shows that the lower your rating the higher the rate.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plot of employment status and loan amount and alos setting the limit
+ggplot(aes(x = EmploymentStatus, y = LoanOriginalAmount), 
+       data = (prosperloan)) +
+  geom_boxplot() +
+  scale_y_continuous(limits = c(0,15000))
+```
+
+This plot looks predictable, Employed has the highest average loan amount, retired has a low average loan amount.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plot of prosper rating ane lender yield
+ggplot(data = prosperloan, aes(x = ProsperRating..Alpha., y = LenderYield)) +
+  geom_boxplot() +
+  xlab("Prosper Rating") +
+  ggtitle("Yield for Different Prosper Rating")
+```
+
+This plot shows a medium correlation between them.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plot of income range and net principal loss
+ggplot(data = prosperloan, aes(x = IncomeRange, y = LP_NetPrincipalLoss)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 30))
+```
+
+This plot shows that this income range ($25,000 - $49,999) has the  highest net principal loss and there is no correlation here.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plot of income range and gross principal loss
+ggplot(data = prosperloan, aes(x = IncomeRange, y = LP_GrossPrincipalLoss)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 30))
+```
+
+This plot is almost the same with the plot of income range and net principal loss.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#creating a new datat frame of prosper gross principal loss grouped by income range
+prosper_Income_Principalloss <- prosperloan %>%
+  group_by(IncomeRange)%>%
+  summarise(mean_GrossPrincipalLoss = mean(LP_GrossPrincipalLoss),
+            median_GrossPrincipalLoss = median(LP_GrossPrincipalLoss),
+            n = n())%>%
+  ungroup()%>%
+  arrange(IncomeRange)
+
+#plot if the above data frame
+ggplot(data = prosper_Income_Principalloss, aes(x = IncomeRange, 
+                                                y = mean_GrossPrincipalLoss)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 30))
+```
+
+This shows an even distribution revealling that the average gross principal loss per income is evenly distributed.
+
+
+# Bivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the \
+Summary 60 month has the highest mean loan original amount followed by the 36 month then then the 12 month. It can also be seen that for the 12 month there are some outliers which means some applicant got loan above 10000 dollars. For the 36 and the 60 months the highest amount borrowed is around 35000 dollars. The 60 months has the widest range.
+There are more investors for the 36 month that any other term and also show less intrest of investors in the 12 month term.
+Current loan status is being dominated by the employed, most Defaulters of the loan are the fulltime followed by the non- available. The most charged off and most completed are the full time and the employed.
+Amazing what is going on, there is a trend which shows that the lower your rating the higher the rate.
+There is no thrend between income Range and the losses.
+
+### Did you observe any interesting relationships between the other features \
+There is a trend which shows that the lower your rating the higher the rate.
+
+### What was the strongest relationship you found?
+mean borrower rate  and prosper score.
+
+# Multivariate Plots Section
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plot of debt to inome ratio lender yeild and prosper rating 
+ggplot(aes(x= DebtToIncomeRatio, y=LenderYield, color=ProsperRating..Alpha.), 
+    data=na.omit(filter(prosperloan, DebtToIncomeRatio < 2))) +
+    geom_point(alpha = 1, position = "jitter") +
+    ggtitle("Lender Yield  vs Debt to Income <2 vs Prosper rate ") +
+    xlab ("Debt To Income Ratio < 2") +
+    ylab ("Lender Yield") + scale_fill_tableau(palette = "Tableau 10", 
+                                               name = "Prosper Rating")
+```
+
+This plot reveals the relationship between lender yeild, debt to income ratio and prosper rating. good prosper rating A and AA have low lenders yield and also low debt to income ration in other word they det low interest on their loan. In The plot medium and bad rating have a large range of debt to income ratio and their lender yield increase respectively.
+
+
+There is no much revelation in this plot, what i can see is that people who have loan status as current have a good correlation between monthly payment and loan original amount.completed loans has a poor correlation but showed that the loan payment were high in respective of the loan original amount in order words the payed more ever month in order to complete the loan fast, and the current status are paying it in bit.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#creating a new variable some selected status in the loan status
+
+prosperloan$loan_SubStatus <- factor(prosperloan$LoanStatus,  
+                          c("Defaulted",
+                            "Chargedoff", 
+                            "Current",
+                            "Completed"))
+
+#plotting a relationship between the new variable and propser rating and loan amount
+ggplot(data = arrange(prosperloan,
+                      loan_SubStatus), aes(x = ProsperRating..Alpha., 
+                    y = LoanOriginalAmount, fill = loan_SubStatus)) +
+                    geom_bar(stat = "identity") +
+                    xlab("Prosper Rating") +
+                    ylab("Original Loan Amount") +
+                    ggtitle("Orignal Loan Amount for Different Prosper Rating") +
+  scale_fill_tableau(palette = "Tableau 10")
+```
+
+Accross the prsoper rating the current status has high proportion and there is a decrease in original loan for, prosper rating C to HR. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#factorizing Loan status
+prosperloan$LoanStatus <- factor(prosperloan$LoanStatus)
+
+#plot of monthly loan payment,loan status and original loan amount
+ggplot(aes(x = LoanOriginalAmount, y = MonthlyLoanPayment, color = loan_SubStatus), 
+       data = prosperloan) +
+  geom_point() +
+  ggtitle("Monthly payment and original loan amount in relation to sub status") +
+  scale_fill_tableau(palette = "Tableau 10")
+
+```
+
+There is no much revelation in this plot, what i can see is that people who have loan status as current have a good correlation between monthly payment and loan original amount.completed loans has a poor correlation but showed that the loan payment were high in respective of the loan original amount in order words the payed more ever month in order to complete the loan fast, and the current status are paying it in bit.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}  
+#created a new variable for mapping the numberic data to a string  data 
+prosperloan$listingCategory_new = 
+  mapvalues (prosperloan$ListingCategory..numeric., 
+             from = c(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), 
+             to = c("NotAvailable", "DebtConsolidation", "HomeImprovement", 
+                    "Business",  "PersonalLoan", "StudentUse", "Auto", "Other", 
+                    "Baby&Adoption", "Boat", "Cosmetic Procedure", 
+                    "EngagementRing", "GreenLoans", "HouseholdExpenses", 
+                    "LargePurchases", "Medical/Dental", "Motorcycle", "RV", 
+                    "Taxes", "Vacation", "WeddingLoans"))
+
+#plot of employment status , laon original amount and listing category
+ggplot(data = (prosperloan), aes(x = EmploymentStatus, 
+                    y = LoanOriginalAmount, fill = listingCategory_new )) +
+                    geom_bar(stat = "identity") +
+                    xlab("Prosper Rating") +
+                    ylab("Original Loan Amount ") +
+                    ggtitle("Orignal Loan Amount for Different Prosper Rating") +
+                    theme(axis.text.x = element_text(angle = 90)) + 
+                    scale_color_tableau()
+```
+
+This above plot is crowded it is hard to get any thing from the above but i will choose the most important variable.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#created a new variable for mapping the numberic data to a string data and selected a few data  
+prosperloan$listingCategory_sub_new <- factor(prosperloan$listingCategory_new,  
+                          c("Business", 
+                            "DebtConsolidation", 
+                            "GreenLoans",
+                            "EngagementRing",
+                            "LargePurchases",
+                            "Medical/Dental",
+                            "PersonalLoan",
+                            "HomeImprovement"
+                            ))
+
+#plot of employment status , laon original amount and listing category
+ggplot(data = (prosperloan), aes(x = EmploymentStatus, 
+                    y = LoanOriginalAmount, fill = listingCategory_sub_new)) +
+                    geom_bar(stat = "identity") +
+                    xlab("Prosper Rating") +
+                    ylab("Original Loan Amount [$]") +
+                    ggtitle("Orignal Loan Amount for Different Prosper Rating") +
+                    theme(axis.text.x = element_text(angle = 90)) + 
+                    scale_color_tableau()
+```
+
+It is obvious that most loans are for debt consolidation.
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the \
+Investigation. Were there features that strengthened each other in terms of \
+looking at your feature(s) of interest?
+
+I observed that most loans are for repayment of old loads i.e debt cosolidation.
+This three variables Lender Yield, Prosper Rating and Debt To Income Ratio come together and how it affect each order.The plot reveals the relationship between lender yeild, debt to income ratio and prosper rating. good prosper rating A and AA have low lenders yield and also low debt to income ration in other word they det low interest on their loan. In The plot medium and bad rating have a large range of debt to income ratio and their lender yield increase respectively. 
+Term loan showswhether we have a better Lender Yield or not.
+
+### Were there any interesting or surprising interactions between features?
+Yes the most surprising is what the loans were used for, they were used for paying off other loans.
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the \
+strengths and limitations of your model.
+NO model was created
+
+------
+
+# Final Plots and Summary
+
+### Plot One
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#created 4 data frame for 4 different loan_substatus vs loan original amount and monthly loan  payment
+p1 <- ggplot(aes(x = LoanOriginalAmount, y = MonthlyLoanPayment, 
+                 fill = loan_SubStatus), 
+       data = subset(prosperloan, (loan_SubStatus == "Chargedoff" ))) +
+    geom_point(alpha = 1, position = "jitter") + 
+  ggtitle("Loan amount and payment") + 
+  scale_fill_discrete(name = "sub status")
+
+p2 <- ggplot(aes(x = LoanOriginalAmount, y = MonthlyLoanPayment, 
+                 fill = loan_SubStatus), 
+       data = subset(prosperloan, (loan_SubStatus == "Completed" ))) +
+    geom_point(alpha = 1, position = "jitter") + 
+  ggtitle("Loan amount and payment") +
+  scale_fill_discrete(name = "sub status")
+
+p3 <- ggplot(aes(x = LoanOriginalAmount, y = MonthlyLoanPayment, 
+                 fill = loan_SubStatus), 
+       data = subset(prosperloan, (loan_SubStatus == "Defaulted" ))) +
+    geom_point(alpha = 1, position = "jitter") + 
+  ggtitle("Loan amount and payment") +
+  scale_fill_discrete(name = "sub status")
+
+p4 <- ggplot(aes(x = LoanOriginalAmount, y = MonthlyLoanPayment, 
+                 fill = loan_SubStatus), 
+       data = subset(prosperloan, (loan_SubStatus == "Current" ))) +
+    geom_point(alpha = 1, position = "jitter") + 
+  ggtitle("Loan amount and payment") +
+  scale_fill_discrete(name = "sub status")
+
+#plot the  above in a grid
+grid.arrange(p1,p2,p3,p4, nrow = 2)
+
+```
+
+### Description One
+The reason why i chose to plot this is because i was very inquisive on what causes the default and why some other people have completed loan status.
+These plots is very revealing showing why people defaulted due to low monthly payment in relation to their Loan amount, for the charged off same thing, their monthly payment is low in relation to the Loan amount. The completed loans have high monthly payment in relation to the loan amount. As we can see for the current status are doing well. 
+
+### Plot Two
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#created a new variable for mapping the numberic data to a string data and selected a few data
+prosperloan$listingCategory_sub_new <- factor(prosperloan$listingCategory_new,  
+                          c("Business",
+                            "DebtConsolidation", 
+                            "GreenLoans",
+                            "EngagementRing",
+                            "LargePurchases",
+                            "Medical/Dental",
+                            "PersonalLoan",
+                            "HomeImprovement"
+                            ))
+
+#plot of employment status , laon original amount and listing category
+ggplot(data = subset(prosperloan, !is.na(listingCategory_sub_new)), 
+       aes(x = EmploymentStatus, 
+                    y = LoanOriginalAmount, fill = listingCategory_sub_new)) +
+                    geom_bar(stat = "identity") +
+                    xlab("Employment status") +
+                    ylab("Original Loan Amount") +
+                    ggtitle("Orignal Loan Amount for Different Prosper Rating")+
+                    theme(axis.text.x = element_text(angle = 90)) +
+  scale_fill_tableau(name = "listing category", palette = "Tableau 10")
+```
+
+### Description Two
+From above you will see a similar type of this plot above but with much noise, out of the plot i could figure ou that debt consolidation was very high acorss all employment status.
+This above plot shows that for every employment status the debt consolidation has a high percentage, showing that people borrow money to pay debt. This plot also showes that the employed people are the highest borrowers of loan.
+
+### Plot Three
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#creating a new variable some selected status in the loan status
+prosperloan$loan_SubStatus_new <- factor(prosperloan$LoanStatus,  
+                          c("Defaulted", "Completed"))
+
+#plotting a relationship between the new variable and propser rating and loan amount
+ggplot(data = subset(prosperloan, !is.na(loan_SubStatus_new),
+                     !is.na(ProsperRating..Alpha.)), 
+       aes(x = ProsperRating..Alpha., 
+                    y = LoanOriginalAmount, fill = loan_SubStatus_new)) +
+                    geom_bar(stat = "identity") +
+                    xlab("Prosper Rating") +
+                    ylab("Original Loan Amount") +
+                    ggtitle("Defaulted and completed for different propser 
+                            rating") + 
+                    scale_fill_tableau(name = "sub status", palette = "Tableau 10")
+  
+```
+
+### Description Three
+
+Having explore all the sub status from the beginning have decided to choose two statuses which is either you defaulted or you completed. the current status wont be of any help in the survey.
+
+This shows the ratio of defaulted to completed and reveals that higher rating are less likely to default. This chart confirmed that although there is higher lending yield for lower rating. This plot could help investors to choose wisely. Investors should also takes a look at the risk of the loan being defaulted. We see very clearly in this chart as the rating reduces the default rate increases, the higher chance the loan getting defaulted.
+
+# Reflection
+
+I chose this data set because it has to do with loan and i have always wanted to explore a loan data set.At the beginning, I didn't know what to looking for in the data set. I trusted my self and believed that as i exlpore i will discover many insights. 
+
+I had struggle with some of the variable choosing which one to use with time I decided to choose the variable I understood , which gave me positive result like people borrowed loan to repay other loans.I also had issues with r syntaxes because am used to python. During my analysis, I verified that many variables that I have believed that would have a greater effect on Borrowers rate, actually were of little help.I had to go through each variable one by one, try to understand the meaning as I was not an expert in the finance or Accounting.
+
+I also categorize loan status into default and completed  as to areas that were discovered which need to be cleared out. I believe that if there were more exploration in the multivariable section putting a lot of variable into consideration it will expose more trends. Also, having only analysed 20 of the original 81 variables leaves a lot of undiscovered relationships and trends. As i progressed i saw that debt consolidation was wat most employed people use their loans for.
+
+Future exlporation,i believe that a good machine learning model will be good for future exploration of this project.
+
