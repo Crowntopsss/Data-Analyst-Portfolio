@@ -2,7 +2,8 @@
 
 ---------------------------------------------------------------------------------------------------------------------
 
-
+![Udacity Data Analyst Nanodegree certificate](./Dataanalyst.png)
+![Udacity Data Analyst Nanodegree certificate](./Datafoundation.png)
 
 ## This folder hosts all my personal projects done so far on Data Analysis.
 
