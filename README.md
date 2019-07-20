@@ -18,6 +18,10 @@ n this project, I queried the Chinook Database. The Chinook Database holds infor
 
 ### [Project 4 — Data dashboard with Tabluea](https://github.com/Crowntopsss/Data-Analyst-Portfolio/tree/master/PR4%20Data%20dashboard%20with%20Tabluea)
 In this project, I created visualizations to reveal insights from a data set.I created data visualizations that tell a story or highlight patterns in the data set. I refelected of the theory and practice of data visualization, such as visual encodings, design principles, and effective communication.
+Tabluea link 
+* https://public.tableau.com/profile/adebiyi.temitope#!/vizhome/Employmentinallthestates/Story1?publish=yes
+* https://public.tableau.com/profile/adebiyi.temitope#!/vizhome/StandardoflivingandpovertyinUS/Story1?publish=yes
+* https://public.tableau.com/profile/adebiyi.temitope#!/vizhome/Transportationandpopulationinallstate/Story1?publish=yes
 
 ### [Project 11 — Analysis of weather trend ](https://github.com/Crowntopsss/Data-Analyst-Portfolio/tree/master/PRJ%2011%20Analysis%20of%20weather%20trend)
 In this project, I analyzed local and global temperature data and compare the temperature trends where I live to overall global temperature trends.
